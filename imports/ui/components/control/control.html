@@ -1,0 +1,31 @@
+<template name="control">
+  <div id="control">
+    <div id="buttons">
+      {{#if swap2}}
+        {{#if canChooseSide}}
+          <button id="playX">Play X</button>
+          <button id="playO">Play O</button>
+        {{/if}}
+
+        {{#if canPlace2}}
+          <button id="place2" title="Play 2 moves and let player 1 choose side">Place 2</button>
+        {{/if}}
+      {{/if}}
+
+      {{#if gameStarted}}
+        <button id="hint" disabled="{{hintDisabled}}">
+          Hint ({{hintsLeft}})
+        </button>
+        <button id="forfeit">Forfeit</button>
+      {{/if}}
+
+      {{#if canCancel}}
+        <button id="cancel">Cancel</button>
+      {{/if}}
+
+      {{#if canStartGame}}
+        <button id="play">New Game</button>
+      {{/if}}
+    </div>
+  </div>
+</template>

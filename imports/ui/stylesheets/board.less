@@ -1,0 +1,51 @@
+#board {
+  margin: 10px 0;
+  border-width: 2px;
+  border-collapse: collapse;
+  box-shadow: 2px 2px 2px #666;
+
+  .cell {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    line-height: 25px;
+    cursor: default;
+    font-weight: bold;
+    font-size: 25px;
+    transition: all 0.2s;
+
+    &.occupied {
+      text-shadow: 2px 2px 2px #ccc;
+    }
+
+    &.occupied-x {
+      color: #da2323;
+    }
+
+    &.occupied-o {
+      color: #009d78;
+    }
+
+    &.last-move {
+      background: #dedcd2;
+    }
+
+    &.selectable {
+      cursor: pointer;
+
+      &:hover {
+        background: #ccc;
+      }
+    }
+
+    &.hint {
+      background: #70c3d4;
+    }
+  }
+}
+
+table, th, td {
+  border: 1px solid #575757;
+}

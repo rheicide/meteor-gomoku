@@ -1,0 +1,17 @@
+<template name="board">
+  <table id="board">
+    {{#each size}}
+      {{#let rowIndex=@index}}
+        <tr>
+          {{#each size}}
+            {{#let data=(cellData rowIndex @index)}}
+              <td id="{{rowIndex}}-{{@index}}" class="cell {{data.class}}" title="{{rowIndex}}-{{@index}}">
+                {{data.text}}
+              </td>
+            {{/let}}
+          {{/each}}
+        </tr>
+      {{/let}}
+    {{/each}}
+  </table>
+</template>
