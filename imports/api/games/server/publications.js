@@ -6,6 +6,6 @@ Meteor.publish('games.my', function myGames() {
     $or: [
       { player1: Meteor.userId() },
       { player2: Meteor.userId() },
-    ]
+    ],
   });
 });

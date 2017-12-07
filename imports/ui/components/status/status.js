@@ -17,38 +17,42 @@ Template.status.helpers({
 
     if (game) {
       switch (game.status) {
-        case Status.OPEN:
+        case Status.OPEN: {
           return 'Waiting for opponent...';
-
-        case Status.SWAP2:
+        }
+        case Status.SWAP2: {
           return 'Swap2';
-
-        case Status.STARTED:
+        }
+        case Status.STARTED: {
           let marker;
           if (game.player1 === Meteor.userId()) {
             marker = 'X';
           } else {
             marker = 'O';
           }
-          
+
           if (game.currentPlayer === Meteor.userId()) {
             return `Your turn (${marker})`;
-          } else {
-            return `Their turn (${marker === 'X' ? 'O' : 'X'})`;
           }
 
-        case Status.FINISHED:
+          return `Their turn (${marker === 'X' ? 'O' : 'X'})`;
+        }
+        case Status.FINISHED: {
           return `You ${game.currentPlayer === Meteor.userId() ? 'won' : 'lose'}!`;
-
+        }
         case Status.FORFEITED:
-        case Status.DISCONNECTED:
+        case Status.DISCONNECTED: {
           const msg = 'You won.';
 
           if (game.status === Status.FORFEITED) {
             return `${msg} Your opponent has forfeited the game.`;
-          } else {
-            return `${msg} Your opponent has disconnected.`;
           }
+
+          return `${msg} Your opponent has disconnected.`;
+        }
+        default: {
+          return 'There\'s something wrong with the game.';
+        }
       }
     } else {
       Session.set('gameId', undefined);

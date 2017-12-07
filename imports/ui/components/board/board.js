@@ -12,7 +12,7 @@ Template.board.onCreated(() => {
 });
 
 Template.board.helpers({
-  size: () => Array(15).fill(0),
+  size: () => new Array(15).fill(0),
   cellData: (row, col) => {
     const cell = {};
     const game = Games.findOne({ _id: Session.get('gameId') });
@@ -20,7 +20,7 @@ Template.board.helpers({
     if (game && game.status > Status.OPEN) {
       for (let i = 0; i < game.moves.length; i++) {
         const move = game.moves[i];
-        
+
         if (move.row === row && move.col === col) {
           cell.class = 'occupied';
 
@@ -33,6 +33,7 @@ Template.board.helpers({
             cell.class += ' occupied-o';
           }
 
+          // highlight last move
           if (i === game.moves.length - 1) {
             cell.class += ' last-move';
           }

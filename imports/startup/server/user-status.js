@@ -9,7 +9,7 @@ UserStatus.events.on('connectionLogout', function (fields) {
     $and: [
       { status: { $lt: Status.FINISHED } },
       { $or: [{ player1: fields.userId }, { player2: fields.userId }] },
-    ]
+    ],
   });
 
   if (game === undefined) {
@@ -20,6 +20,10 @@ UserStatus.events.on('connectionLogout', function (fields) {
     Games.update({ _id: game._id }, { $set: { status: Status.CANCELED } });
   } else {
     const otherPlayer = game.player1 === fields.userId ? game.player2 : game.player1;
-    Games.update({ _id: game._id }, { $set: { status: Status.DISCONNECTED, currentPlayer: otherPlayer } });
+
+    Games.update(
+      { _id: game._id },
+      { $set: { status: Status.DISCONNECTED, currentPlayer: otherPlayer } },
+    );
   }
 });

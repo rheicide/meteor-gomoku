@@ -14,14 +14,14 @@ Template.control.onCreated(function controlOnCreated () {
 });
 
 Template.control.events({
-  'click #play'(event, instance) {
+  'click #play'(event, templateInstance) {
     Meteor.call('games.play', (err, gameId) => {
       if (err) {
-        console.log(err);
+        console.error(err);
       } else {
         Session.set('gameId', gameId);
         Session.set('hint', undefined);
-        instance.hintsLeft.set(3);
+        templateInstance.hintsLeft.set(3);
       }
     });
   },
@@ -44,15 +44,15 @@ Template.control.events({
   'click #place2'() {
     Meteor.call('games.swap2.place2', Session.get('gameId'));
   },
-  'click #hint'(event, instance) {
+  'click #hint'(event, templateInstance) {
     const hint = Session.get('hint');
 
-    // if (hint === undefined) {
+    if (hint === undefined) {
       Meteor.call('games.hint', Session.get('gameId'), (err, move) => {
         Session.set('hint', move);
-        instance.hintsLeft.set(instance.hintsLeft.get() - 1);
+        templateInstance.hintsLeft.set(templateInstance.hintsLeft.get() - 1);
       });
-    // }
+    }
   },
 });
 
@@ -63,9 +63,9 @@ Template.control.helpers({
     if (gameId) {
       const game = Games.findOne({ _id: gameId });
       return game === undefined || game.status > Status.STARTED;
-    } else {
-      return true;
     }
+
+    return true;
   },
   gameStarted: () => {
     const game = Games.findOne({ _id: Session.get('gameId'), status: Status.STARTED });
@@ -81,12 +81,8 @@ Template.control.helpers({
   },
   canChooseSide: () => {
     const game = Games.findOne({ _id: Session.get('gameId'), status: Status.SWAP2 });
-
-    if (game.player1 === Meteor.userId()) {
-      return game.moves.length === 5;
-    } else {
-      return game.moves.length === 3 && game.currentPlayer === '';
-    }
+    return (game.player1 === Meteor.userId() && game.moves.length === 5) ||
+        (game.currentPlayer === '' && game.moves.length === 3);
   },
   canPlace2: () => {
     const game = Games.findOne({
@@ -94,7 +90,7 @@ Template.control.helpers({
       status: Status.SWAP2,
       currentPlayer: '',
       player2: Meteor.userId(),
-      moves: { $size: 3 }
+      moves: { $size: 3 },
     });
 
     return game !== undefined;
@@ -104,7 +100,7 @@ Template.control.helpers({
     const game = Games.findOne({
       _id: Session.get('gameId'),
       status: Status.STARTED,
-      currentPlayer: Meteor.userId()
+      currentPlayer: Meteor.userId(),
     });
 
     return game === undefined || Template.instance().hintsLeft.get() <= 0;

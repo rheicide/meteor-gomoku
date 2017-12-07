@@ -5,7 +5,7 @@
         <tr>
           {{#each size}}
             {{#let data=(cellData rowIndex @index)}}
-              <td id="{{rowIndex}}-{{@index}}" class="cell {{data.class}}" title="{{rowIndex}}-{{@index}}">
+              <td id="{{rowIndex}}-{{@index}}" class="cell {{data.class}}">
                 {{data.text}}
               </td>
             {{/let}}

@@ -6,37 +6,34 @@ function suggestMove(game) {
 
   for (let row = 0; row < board.length; row++) {
     for (let col = 0; col < board.length; col++) {
-      // ignore occupied cells
-      if (board[row][col] > 0) {
-        continue;
-      }
+      if (board[row][col] === 0) { // ignore occupied cells
+        // init bestMove with 1st free cell and default scores
+        if (bestMove === undefined) {
+          bestMove = [{ row, col }, 0, 0];
+        }
 
-      // init bestMove with 1st free cell and default scores
-      if (bestMove === undefined) {
-        bestMove = [{ row, col }, 0, 0];
-      }
+        const cellScores = computeCellScores(board, row, col, currentPlayer);
 
-      const cellScores = computeCellScores(board, row, col, currentPlayer);
+        // cell with higher scores for both players are better
+        const totalCellScore = cellScores[0] + cellScores[1];
+        const totalBestScore = bestMove[1] + bestMove[2];
 
-      // cell with higher scores for both players are better
-      const totalCellScore = cellScores[0] + cellScores[1];
-      const totalBestScore = bestMove[1] + bestMove[2];
-
-      if (totalCellScore > totalBestScore ||
-          // same score but cell has better score for current player than current best move
-          (totalCellScore === totalBestScore && cellScores[currentPlayer - 1] > bestMove[currentPlayer])) {
-        bestMove = [{ row, col }, cellScores[0], cellScores[1]];
+        if (totalCellScore > totalBestScore ||
+            // same score but cell has better score for current player than current best move
+            (totalCellScore === totalBestScore
+                && cellScores[currentPlayer - 1] > bestMove[currentPlayer])) {
+          bestMove = [{ row, col }, cellScores[0], cellScores[1]];
+        }
       }
     }
   }
 
-  console.log('bestScore', bestMove);
   return bestMove[0];
 }
 
 function getBoard(game) {
   const board = new Array(15);
-  
+
   for (let row = 0; row < board.length; row++) {
     board[row] = new Array(15).fill(0);
   }
@@ -81,10 +78,10 @@ function computeCellScores(board, row, col, currentPlayer) {
   ];
 
   // cell's total scores are sum of all direction scores
-  directionScores.forEach(directionScore => {
+  directionScores.forEach((directionScore) => {
     cellScore[0] += directionScore[0];
     cellScore[1] += directionScore[1];
-  })
+  });
 
   return cellScore;
 }
@@ -103,8 +100,8 @@ function computeDirectionScores(board, row, col, rowDelta, colDelta, currentPlay
     // [--XXXCX, -XXXCXX, XXXCXXO, XXCXXO-, XCXXO--]
     for (let j = 0; j < 7; j++) {
       const currentOffset = offset - i - j;
-      const currentRow = row - currentOffset * rowDelta;
-      const currentCol = col - currentOffset * colDelta;
+      const currentRow = row - (currentOffset * rowDelta);
+      const currentCol = col - (currentOffset * colDelta);
 
       let currentType;
       if (isValidPosition(currentRow, currentCol)) {
@@ -120,7 +117,7 @@ function computeDirectionScores(board, row, col, rowDelta, colDelta, currentPlay
     const sequenceEmpty = sequenceUnique.length === 1 && sequenceUnique[0] === 0;
 
     if (!sequenceEmpty) {
-      [1, 2].forEach(type => {
+      [1, 2].forEach((type) => {
         let sequenceScores = computeSequenceScores(sequence, row, col, type);
 
         // quadruple scores if current player can win with this sequence
@@ -136,15 +133,15 @@ function computeDirectionScores(board, row, col, rowDelta, colDelta, currentPlay
   return directionScores;
 }
 
-function updateDirectionScores(directionScore, sequenceScore, idx) {
+function updateDirectionScores(directionScores, sequenceScores, idx) {
   // if sequence contains overline
-  if (sequenceScore < 0) {
+  if (sequenceScores < 0) {
     // then negative score for direction
-    directionScore[idx] = -1;
+    directionScores[idx] = -1;
   }
 
-  if (directionScore[idx] >= 0) { // direction doesn't have overline
-    directionScore[idx] = Math.max(directionScore[idx], sequenceScore);
+  if (directionScores[idx] >= 0) { // direction doesn't have overline
+    directionScores[idx] = Math.max(directionScores[idx], sequenceScores);
   }
 }
 
@@ -169,22 +166,22 @@ function computeSequenceScores(sequence, row, col, type) {
 
   for (let k = sequence.indexOf(cell) - 1; k >= 0; k--) {
     if (sequence[k].type === type) {
-      consecutiveCells++;
+      consecutiveCells += 1;
     } else {
       if (sequence[k].type === 0) {
-        openEnds++;
+        openEnds += 1;
       }
 
       break;
     }
   }
-  
+
   for (let k = sequence.indexOf(cell); k < sequence.length; k++) {
     if (sequence[k].type === type) {
-      consecutiveCells++;
+      consecutiveCells += 1;
     } else {
       if (sequence[k].type === 0) {
-        openEnds++;
+        openEnds += 1;
       }
 
       break;
@@ -199,8 +196,8 @@ function computeSequenceScores(sequence, row, col, type) {
   // reset cell
   cell.type = 0;
 
-  const scoreIdx0 = consecutiveCells >= totalCells ? Math.min(consecutiveCells, 5) - 1 : totalCells - 1;
-  const scoreIdx1 = consecutiveCells >= totalCells ? (openEnds ? openEnds - 1 : 0) : 0;
+  const scoreIdx0 = Math.max(consecutiveCells, totalCells) - 1;
+  const scoreIdx1 = (consecutiveCells >= totalCells && openEnds > 0) ? openEnds - 1 : 0;
 
   return scores[scoreIdx0][scoreIdx1];
 }
@@ -211,7 +208,7 @@ function getTotalCellsOfType(sequence, type) {
   // don't take into account both ends
   for (let i = 1; i < 6; i++) {
     if (sequence[i].type === type) {
-      totalCells++;
+      totalCells += 1;
     }
   }
 
@@ -219,7 +216,7 @@ function getTotalCellsOfType(sequence, type) {
 }
 
 function isValidPosition(row, col) {
-  return 0 <= row && row < 15 && 0 <= col && col < 15;
+  return row >= 0 && row < 15 && col >= 0 && col < 15;
 }
 
 export { suggestMove, isValidPosition, isWinningMove };
