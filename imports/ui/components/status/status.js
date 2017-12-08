@@ -34,6 +34,10 @@ Template.status.helpers({
           return `Their turn (${theirMarker})`;
         }
         case Status.FINISHED: {
+          if (game.currentPlayer === '') {
+            return 'It\'s a tie!';
+          }
+
           return `You ${game.currentPlayer === Meteor.userId() ? 'won' : 'lose'}!`;
         }
         case Status.FORFEITED:

@@ -44,7 +44,9 @@ Meteor.methods({
     } else {
       const moveCount = game.moves.length + 1;
 
-      if (game.status === Status.SWAP2 && (moveCount === 3 || moveCount === 5)) {
+      if (moveCount === 15 * 15) { // tie
+        Games.update({ _id: game._id }, { $set: { status: Status.FINISHED, currentPlayer: '' } });
+      } else if (game.status === Status.SWAP2 && (moveCount === 3 || moveCount === 5)) {
         // this is when p1 (at move 3) or p2 (at move 5) has to make a choice during SWAP2 phase
         // empty game.currentPlayer so that they cannot make a move
         Games.update({ _id: game._id }, { $set: { currentPlayer: '' } });
