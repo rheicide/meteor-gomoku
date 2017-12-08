@@ -1,0 +1,23 @@
+pipeline:
+  docker:
+    image: plugins/docker
+    username: ${DOCKER_USERNAME}
+    password: ${DOCKER_PASSWORD}
+    repo: nphung/meteor-gomoku
+    tags:
+      - latest
+      - 1.0
+
+  deploy:
+    image: drillster/drone-rsync
+    hosts: [ "gcp-sea.elarvee.xyz" ]
+    user: ${SSH_USER}
+    key: ${SSH_KEY}
+    target: /opt/meteor-gomoku
+    include: [ "docker-compose.yml" ]
+    exclude: [ "*" ]
+    script:
+      - cd /opt/meteor-gomoku
+      - docker-compose pull
+      - docker-compose down -v
+      - docker-compose up -d
