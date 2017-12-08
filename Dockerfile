@@ -1,6 +1,4 @@
-FROM node:8.8.1
-
-RUN curl https://install.meteor.com/ | sh
+FROM nphung/node-meteor:1.6
 
 WORKDIR /usr/src/app
 
