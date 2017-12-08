@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { check } from 'meteor/check';
 
 import { Games } from './games.js';
 import { Status } from './status.js';
@@ -6,6 +7,18 @@ import { Status } from './status.js';
 export const Actions = {
   createNewGame() {
     return Games.insert({ player1: Meteor.userId(), player2: '', status: Status.OPEN, moves: [] });
+  },
+
+  findGame(selector) {
+    check(selector, Object);
+
+    const game = Games.findOne(selector);
+
+    if (game === undefined) {
+      throw new Meteor.Error('game-not-found');
+    }
+
+    return game;
   },
 
   findPlayingGame() {
@@ -35,7 +48,7 @@ export const Actions = {
       return;
     }
 
-    const nextPlayer = (game.player1 === Meteor.userId()) ? game.player2 : game.player1;
+    const nextPlayer = game.player1 === Meteor.userId() ? game.player2 : game.player1;
 
     Games.update({ _id: game._id }, { $set: { currentPlayer: nextPlayer } });
   },

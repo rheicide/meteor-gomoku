@@ -24,18 +24,14 @@ Template.status.helpers({
           return 'Swap2';
         }
         case Status.STARTED: {
-          let marker;
-          if (game.player1 === Meteor.userId()) {
-            marker = 'X';
-          } else {
-            marker = 'O';
-          }
+          const marker = game.player1 === Meteor.userId() ? 'X' : 'O';
+          const theirMarker = marker === 'X' ? 'O' : 'X';
 
           if (game.currentPlayer === Meteor.userId()) {
             return `Your turn (${marker})`;
           }
 
-          return `Their turn (${marker === 'X' ? 'O' : 'X'})`;
+          return `Their turn (${theirMarker})`;
         }
         case Status.FINISHED: {
           return `You ${game.currentPlayer === Meteor.userId() ? 'won' : 'lose'}!`;

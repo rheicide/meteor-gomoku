@@ -81,8 +81,12 @@ Template.control.helpers({
   },
   canChooseSide: () => {
     const game = Games.findOne({ _id: Session.get('gameId'), status: Status.SWAP2 });
-    return (game.player1 === Meteor.userId() && game.moves.length === 5) ||
-        (game.currentPlayer === '' && game.moves.length === 3);
+
+    if (game.player1 === Meteor.userId()) {
+      return game.moves.length === 5;
+    }
+
+    return game.moves.length === 3 && game.currentPlayer === '';
   },
   canPlace2: () => {
     const game = Games.findOne({

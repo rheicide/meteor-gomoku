@@ -59,15 +59,14 @@ function isWinningMove(game, row, col) {
 
   const board = getBoard(game);
   const currentPlayer = game.currentPlayer === game.player1 ? 1 : 2;
-  const scores = computeCellScores(board, row, col, currentPlayer);
+  const cellScores = computeCellScores(board, row, col, currentPlayer);
 
-  // console.log({ currentPlayer, row, col, scores, score: scores[currentPlayer - 1] });
-  return scores[currentPlayer - 1] >= 128;
+  return cellScores[currentPlayer - 1] >= 128;
 }
 
 function computeCellScores(board, row, col, currentPlayer) {
   // cell's total scores for p1 and p2, default to 0's
-  const cellScore = [0, 0];
+  const cellScores = [0, 0];
 
   // compute cell's score in 4 directions
   const directionScores = [
@@ -79,11 +78,11 @@ function computeCellScores(board, row, col, currentPlayer) {
 
   // cell's total scores are sum of all direction scores
   directionScores.forEach((directionScore) => {
-    cellScore[0] += directionScore[0];
-    cellScore[1] += directionScore[1];
+    cellScores[0] += directionScore[0];
+    cellScores[1] += directionScore[1];
   });
 
-  return cellScore;
+  return cellScores;
 }
 
 function computeDirectionScores(board, row, col, rowDelta, colDelta, currentPlayer) {
@@ -146,9 +145,11 @@ function updateDirectionScores(directionScores, sequenceScores, idx) {
 }
 
 // predefined scores
+//
 // scores for a sequence is scores[i][j]
 // - more consecutive/total cells of same type (X/O) means bigger i
 // - more open ends of consecutive cells formed by the sequence means bigger j
+//
 // 5 consecutive cells has max score (128), regardless of number of open ends
 // 1 cell, blocked on the front and/or back, has min score (0)
 // overline has negative score (-1)
@@ -157,13 +158,14 @@ const scores = [[0, 1], [2, 4], [8, 32], [24, 64], [128, 128]];
 function computeSequenceScores(sequence, row, col, type) {
   const cell = sequence.find(c => c.row === row && c.col === col);
 
-  // assume that this empty cell is played by a player
+  // assume that this cell is played by the player with the current "type" (1/2)
   cell.type = type;
 
   const totalCells = getTotalCellsOfType(sequence, type);
   let consecutiveCells = 0;
   let openEnds = 0;
 
+  // go left
   for (let k = sequence.indexOf(cell) - 1; k >= 0; k--) {
     if (sequence[k].type === type) {
       consecutiveCells += 1;
@@ -176,6 +178,7 @@ function computeSequenceScores(sequence, row, col, type) {
     }
   }
 
+  // go right
   for (let k = sequence.indexOf(cell); k < sequence.length; k++) {
     if (sequence[k].type === type) {
       consecutiveCells += 1;
@@ -188,12 +191,12 @@ function computeSequenceScores(sequence, row, col, type) {
     }
   }
 
-  // overline causes negative score
+  // overline -> negative score
   if (consecutiveCells > 5) {
     return -1;
   }
 
-  // reset cell
+  // reset cell's type
   cell.type = 0;
 
   const scoreIdx0 = Math.max(consecutiveCells, totalCells) - 1;
@@ -205,7 +208,7 @@ function computeSequenceScores(sequence, row, col, type) {
 function getTotalCellsOfType(sequence, type) {
   let totalCells = 0;
 
-  // don't take into account both ends
+  // don't take the ends into account
   for (let i = 1; i < 6; i++) {
     if (sequence[i].type === type) {
       totalCells += 1;

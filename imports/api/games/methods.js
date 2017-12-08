@@ -30,77 +30,63 @@ Meteor.methods({
       throw new Meteor.Error('invalid-move');
     }
 
-    const cursor = Games.find({ _id: gameId });
-    let game = cursor.fetch()[0];
+    const game = Actions.findGame({
+      _id: gameId,
+      status: { $in: [Status.STARTED, Status.SWAP2] },
+      currentPlayer: Meteor.userId(),
+    });
 
-    if (game === undefined) {
-      throw new Meteor.Error('game-not-found');
-    }
+    Actions.makeMove(game, row, col);
 
-    if ((game.status === Status.STARTED || game.status === Status.SWAP2) &&
-        game.currentPlayer === Meteor.userId()) {
-      Actions.makeMove(game, row, col);
+    if (isWinningMove(game, row, col)) {
+      // game is won by current player
+      Games.update({ _id: game._id }, { $set: { status: Status.FINISHED } });
+    } else {
+      const moveCount = game.moves.length + 1;
 
-      if (isWinningMove(game, row, col)) {
-        Games.update({ _id: game._id }, { $set: { status: Status.FINISHED } });
+      if (game.status === Status.SWAP2 && (moveCount === 3 || moveCount === 5)) {
+        // this is when p1 (at move 3) or p2 (at move 5) has to make a choice during SWAP2 phase
+        // empty game.currentPlayer so that they cannot make a move
+        Games.update({ _id: game._id }, { $set: { currentPlayer: '' } });
       } else {
-        game = cursor.fetch()[0];
-        const moveCount = game.moves.length;
-
-        if (game.status === Status.SWAP2 && (moveCount === 3 || moveCount === 5)) {
-          Games.update({ _id: game._id }, { $set: { currentPlayer: '' } });
-        } else {
-          Actions.switchTurn(game);
-        }
+        Actions.switchTurn(game);
       }
     }
   },
 
   'games.forfeit'(gameId) {
     check(gameId, String);
-    const game = Games.findOne({ _id: gameId });
 
-    if (game) {
-      let winner;
+    const game = Actions.findGame({ _id: gameId });
+    const winner = game.player1 === Meteor.userId() ? game.player2 : game.player1;
 
-      if (game.player1 === Meteor.userId()) {
-        winner = game.player2;
-      } else {
-        winner = game.player1;
-      }
-
-      Games.update(
-        { _id: gameId },
-        { $set: { status: Status.FORFEITED, currentPlayer: winner } },
-      );
-    }
+    Games.update(
+      { _id: gameId },
+      { $set: { status: Status.FORFEITED, currentPlayer: winner } },
+    );
   },
 
   'games.cancel'(gameId) {
     check(gameId, String);
-    const game = Games.findOne({ _id: gameId });
 
-    if (game && game.status === Status.OPEN && game.player1 === Meteor.userId()) {
-      Games.update({ _id: gameId }, { $set: { status: Status.CANCELED } });
-    }
+    const game = Actions.findGame({ _id: gameId, status: Status.OPEN, player1: Meteor.userId() });
+
+    Games.update({ _id: game._id }, { $set: { status: Status.CANCELED } });
   },
 
   'games.swap2.chooseSide'(gameId, side) {
     check(gameId, String);
     check(side, Match.OneOf('X', 'O'));
 
-    const game = Games.findOne({ _id: gameId, status: Status.SWAP2 });
-
-    if (game === undefined) {
-      throw new Meteor.Error('game-not-found');
-    }
-
+    const game = Actions.findGame({ _id: gameId, status: Status.SWAP2 });
     const player1ChoosingO = (side === 'O' && game.moves.length === 5 && game.player1 === Meteor.userId());
     const player2ChoosingX = (side === 'X' && game.moves.length === 3 && game.player2 === Meteor.userId());
 
     if (player1ChoosingO || player2ChoosingX) {
       Actions.switchSides(game);
     } else {
+      // if p1 chooses to play X at move 5 or p2 chooses to play O at move 3
+      // then p2 is the one to make the next move
       Games.update(
         { _id: gameId },
         { $set: { status: Status.STARTED, currentPlayer: game.player2 } },
@@ -108,23 +94,22 @@ Meteor.methods({
     }
   },
 
+  // p2 chooses to play 2 more moves before letting p1 chooses sides
   'games.swap2.place2'(gameId) {
     check(gameId, String);
-    const game = Games.findOne({ _id: gameId, status: Status.SWAP2 });
 
-    if (game) {
-      Games.update({ _id: gameId }, { $set: { currentPlayer: game.player2 } });
-    }
+    const game = Actions.findGame({ _id: gameId, status: Status.SWAP2 });
+
+    Games.update({ _id: gameId }, { $set: { currentPlayer: game.player2 } });
   },
 
   'games.hint'(gameId) {
     check(gameId, String);
-    const game = Games.findOne({ _id: gameId, status: Status.STARTED });
 
-    if (game) {
-      return suggestMove(game);
-    }
-
-    return undefined;
+    return suggestMove(Actions.findGame({
+      _id: gameId,
+      status: Status.STARTED,
+      currentPlayer: Meteor.userId(),
+    }));
   },
 });
