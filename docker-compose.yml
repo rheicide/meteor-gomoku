@@ -13,12 +13,15 @@ services:
     labels:
       - "traefik.port=3000"
       - "traefik.frontend.rule=Host:gomoku.elarvee.xyz"
+      - "traefik.frontend.auth.basic=fram^:$$apr1$$GjRh/6Ip$$kILQUHM6UmVEONjO4s5G41"
     restart: unless-stopped
 
   mongodb:
     image: mongo:3
     ports:
       - "27017"
+    networks:
+      - web
     volumes:
       - ./data:/data/db
 
