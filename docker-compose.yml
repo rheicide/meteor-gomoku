@@ -13,7 +13,7 @@ services:
     labels:
       - "traefik.port=3000"
       - "traefik.frontend.rule=Host:gomoku.elarvee.xyz"
-      - "traefik.frontend.auth.basic=fram^:$$apr1$$GjRh/6Ip$$kILQUHM6UmVEONjO4s5G41"
+      - "traefik.frontend.auth.basic=fram^:$$apr1$$GjRh/6Ip$$kILQUHM6UmVEONjO4s5G41,win3.4:$$apr1$$0HWetbiB$$cFujEwU/DTTip/.K.M4k.1"
     restart: unless-stopped
 
   mongodb:
