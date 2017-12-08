@@ -24,10 +24,32 @@
   "eslintConfig": {
     "extends": "@meteorjs/eslint-config-meteor",
     "rules": {
-      "no-console": ["warn", { "allow": ["error"] }],
-      "no-param-reassign": ["error", { "props": false }],
-      "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
-      "no-use-before-define": ["error", { "functions": false }],
+      "no-console": [
+        "warn",
+        {
+          "allow": [
+            "error"
+          ]
+        }
+      ],
+      "no-param-reassign": [
+        "error",
+        {
+          "props": false
+        }
+      ],
+      "no-plusplus": [
+        "error",
+        {
+          "allowForLoopAfterthoughts": true
+        }
+      ],
+      "no-use-before-define": [
+        "error",
+        {
+          "functions": false
+        }
+      ],
       "import/prefer-default-export": "off",
       "meteor/no-session": "off"
     }
