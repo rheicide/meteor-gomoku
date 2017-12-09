@@ -5,8 +5,14 @@ import { Games } from './games.js';
 import { Status } from './status.js';
 
 export const Actions = {
-  createNewGame() {
-    return Games.insert({ player1: Meteor.userId(), player2: '', status: Status.OPEN, moves: [] });
+  createNewGame(connectionId) {
+    return Games.insert({
+      player1: Meteor.userId(),
+      player2: '',
+      status: Status.OPEN,
+      moves: [],
+      connectionIds: [connectionId],
+    });
   },
 
   findGame(selector) {
@@ -21,23 +27,17 @@ export const Actions = {
     return game;
   },
 
-  findPlayingGame() {
-    return Games.findOne({
-      $and: [
-        { status: Status.STARTED },
-        { $or: [{ player1: Meteor.userId() }, { player2: Meteor.userId() }] },
-      ],
-    });
-  },
-
   findOpenGame() {
     return Games.findOne({ status: Status.OPEN, player1: { $ne: Meteor.userId() }, player2: '' });
   },
 
-  joinGame(game) {
+  joinGame(game, connectionId) {
     Games.update(
-        { _id: game._id },
-        { $set: { player2: Meteor.userId(), status: Status.SWAP2, currentPlayer: game.player1 } },
+      { _id: game._id },
+      {
+        $set: { player2: Meteor.userId(), status: Status.SWAP2, currentPlayer: game.player1 },
+        $push: { connectionIds: connectionId },
+      },
     );
 
     return game._id;

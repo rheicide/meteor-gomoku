@@ -8,17 +8,12 @@ import { suggestMove, isValidPosition, isWinningMove } from './bot.js';
 
 Meteor.methods({
   'games.play'() {
-    let game = Actions.findPlayingGame();
+    const game = Actions.findOpenGame();
     if (game) {
-      return game._id;
+      return Actions.joinGame(game, this.connection.id);
     }
 
-    game = Actions.findOpenGame();
-    if (game) {
-      return Actions.joinGame(game);
-    }
-
-    return Actions.createNewGame();
+    return Actions.createNewGame(this.connection.id);
   },
 
   'games.move'(gameId, row, col) {

@@ -8,6 +8,7 @@ UserStatus.events.on('connectionLogout', function (fields) {
   const game = Games.findOne({
     $and: [
       { status: { $lt: Status.FINISHED } },
+      { connectionIds: fields.connectionId },
       { $or: [{ player1: fields.userId }, { player2: fields.userId }] },
     ],
   });
